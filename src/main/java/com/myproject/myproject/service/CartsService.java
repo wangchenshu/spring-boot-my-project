@@ -45,8 +45,8 @@ public class CartsService {
                 .ifPresent(carts -> cartsRepository.delete(carts));
     }
 
-    public Long deleteByMessengerUserId(String messengerUserId) {
-        return cartsRepository.deleteByMessengerUserId(messengerUserId);
+    public void deleteByMessengerUserId(String messengerUserId) {
+        cartsRepository.deleteByMessengerUserId(messengerUserId);
     }
 
     @Async

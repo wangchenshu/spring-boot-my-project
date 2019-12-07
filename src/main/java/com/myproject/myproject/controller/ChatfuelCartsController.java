@@ -32,12 +32,14 @@ public class ChatfuelCartsController {
 
     @GetMapping("/chatfuel/carts/messenger-user/{messengerUserId}")
     public ResponseEntity<List<Carts>> showByMessengerUserId(@PathVariable(value = "messengerUserId") String messengerUserId) {
+        System.out.println("messengerUserId = " + messengerUserId);
         return new ResponseEntity<>(cartsService.findByMessengerUserId(messengerUserId), HttpStatus.OK);
     }
 
     @PostMapping("/chatfuel/carts")
     public ResponseEntity<ChatfuelMessages> create(@RequestBody Carts carts) {
         List<ChatfuelText> chatfuelTexts = new ArrayList<>();
+        cartsService.addCarts(carts);
         chatfuelTexts.add(new ChatfuelText("加入購物車成功"));
         return ResponseEntity.ok(new ChatfuelMessages(chatfuelTexts));
     }
@@ -72,6 +74,7 @@ public class ChatfuelCartsController {
     @PostMapping("/chatfuel/carts/clear")
     public ResponseEntity<ChatfuelMessages> clear(@RequestBody ClearCartPostBody clearCartPostBody) {
         List<ChatfuelText> chatfuelTexts = new ArrayList<>();
+        System.out.println("clearCartPostBody = " + clearCartPostBody);
         cartsService.deleteByMessengerUserId(clearCartPostBody.getMessengerUserId());
         chatfuelTexts.add(new ChatfuelText("清除購物車成功"));
         return ResponseEntity.ok(new ChatfuelMessages(chatfuelTexts));

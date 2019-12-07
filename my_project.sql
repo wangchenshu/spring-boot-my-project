@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- 主機： localhost
--- 產生時間： 2019 年 12 月 01 日 19:55
+-- 產生時間： 2019 年 12 月 07 日 15:47
 -- 伺服器版本： 10.3.20-MariaDB-0ubuntu0.19.10.1
 -- PHP 版本： 7.3.12-1+ubuntu19.10.1+deb.sury.org+1
 
@@ -57,6 +57,23 @@ CREATE TABLE `fb_users` (
   `created_at` datetime NOT NULL DEFAULT current_timestamp(),
   `updated_at` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- --------------------------------------------------------
+
+--
+-- 資料表結構 `hibernate_sequence`
+--
+
+CREATE TABLE `hibernate_sequence` (
+  `next_val` bigint(20) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- 傾印資料表的資料 `hibernate_sequence`
+--
+
+INSERT INTO `hibernate_sequence` (`next_val`) VALUES
+(1);
 
 -- --------------------------------------------------------
 
@@ -130,14 +147,38 @@ CREATE TABLE `users` (
   `name` varchar(50) NOT NULL,
   `password` varchar(255) NOT NULL,
   `created_at` datetime NOT NULL DEFAULT current_timestamp(),
-  `updated_at` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+  `updated_at` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `username` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
 -- 傾印資料表的資料 `users`
 --
 
-INSERT INTO `users` (`id`, `name`, `password`, `created_at`, `updated_at`) VALUES
+INSERT INTO `users` (`id`, `name`, `password`, `created_at`, `updated_at`, `username`) VALUES
+(1, 'test1', '$2a$14$Jrq5TzhoSBC1V/1GDFFkCemNS5wW7XqMOB6MpohI4HdDCTR0gw696', '2019-11-23 19:03:48', '2019-12-01 19:53:00', NULL),
+(2, 'test2', '$2a$14$sxT82K3u9ynGCO6WWnqUdO6gCA5GnYYwgSfKq3mVX2.Oz9nA7NPuy', '2019-11-23 19:03:56', '2019-12-01 19:53:28', NULL),
+(3, 'test3', '$2a$14$Pyfk.cMP9h8kiZtSTl595ekkLyXO2FcNAaGfsVB3ze0n6s0DAFqB.', '2019-11-23 19:51:28', '2019-12-01 19:53:43', NULL);
+
+-- --------------------------------------------------------
+
+--
+-- 資料表結構 `users_spring_boot`
+--
+
+CREATE TABLE `users_spring_boot` (
+  `id` int(11) NOT NULL,
+  `username` varchar(50) NOT NULL,
+  `password` varchar(255) NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
+  `updated_at` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- 傾印資料表的資料 `users_spring_boot`
+--
+
+INSERT INTO `users_spring_boot` (`id`, `username`, `password`, `created_at`, `updated_at`) VALUES
 (1, 'test1', '$2a$14$Jrq5TzhoSBC1V/1GDFFkCemNS5wW7XqMOB6MpohI4HdDCTR0gw696', '2019-11-23 19:03:48', '2019-12-01 19:53:00'),
 (2, 'test2', '$2a$14$sxT82K3u9ynGCO6WWnqUdO6gCA5GnYYwgSfKq3mVX2.Oz9nA7NPuy', '2019-11-23 19:03:56', '2019-12-01 19:53:28'),
 (3, 'test3', '$2a$14$Pyfk.cMP9h8kiZtSTl595ekkLyXO2FcNAaGfsVB3ze0n6s0DAFqB.', '2019-11-23 19:51:28', '2019-12-01 19:53:43');
@@ -187,6 +228,12 @@ ALTER TABLE `users`
   ADD PRIMARY KEY (`id`);
 
 --
+-- 資料表索引 `users_spring_boot`
+--
+ALTER TABLE `users_spring_boot`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- 在傾印的資料表使用自動遞增(AUTO_INCREMENT)
 --
 
@@ -224,6 +271,12 @@ ALTER TABLE `product_type`
 -- 使用資料表自動遞增(AUTO_INCREMENT) `users`
 --
 ALTER TABLE `users`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- 使用資料表自動遞增(AUTO_INCREMENT) `users_spring_boot`
+--
+ALTER TABLE `users_spring_boot`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --

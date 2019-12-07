@@ -36,23 +36,23 @@ public class ProductController {
         return new ResponseEntity<>(productService.findAll(), HttpStatus.OK);
     }
 
-    @PostMapping("")
+    @PostMapping("/product")
     public ResponseEntity<Product> create(@RequestBody Product product) {
         return ResponseEntity.ok(productService.addProduct(product));
     }
 
-    @PutMapping("")
+    @PutMapping("/product")
     public ResponseEntity<Product> update(@RequestBody Product product) {
         return ResponseEntity.ok(productService.updateProduct(product));
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/product/{id}")
     public ResponseEntity<Boolean> delete(@PathVariable(value = "id") int id) {
         productService.deleteProduct(id);
         return ResponseEntity.ok(true);
     }
 
-    @GetMapping("/async")
+    @GetMapping("/products/async")
     public @ResponseBody
     CompletableFuture<ResponseEntity> showAllAsync() {
         return productService.getAllProductAsync()

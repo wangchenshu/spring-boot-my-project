@@ -10,4 +10,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class ClearCartPostBody {
     private String messengerUserId;
+    private String firstName;
 }

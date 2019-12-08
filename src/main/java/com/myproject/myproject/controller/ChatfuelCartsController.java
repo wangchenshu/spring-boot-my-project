@@ -1,10 +1,8 @@
 package com.myproject.myproject.controller;
 
-import com.myproject.myproject.model.Carts;
-import com.myproject.myproject.model.ChatfuelMessages;
-import com.myproject.myproject.model.ChatfuelText;
-import com.myproject.myproject.model.ClearCartPostBody;
+import com.myproject.myproject.model.*;
 import com.myproject.myproject.service.CartsService;
+import com.myproject.myproject.service.OrdersService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,10 +28,47 @@ public class ChatfuelCartsController {
     @Autowired
     private CartsService cartsService;
 
+    @Autowired
+    private OrdersService ordersService;
+
+    private List<ChatfuelText> listCarts(List<Carts> cartsList) {
+        List<ChatfuelText> chatfuelTexts = new ArrayList<>();
+
+        if (cartsList.isEmpty()) {
+            return chatfuelTexts;
+        }
+
+        StringBuilder detailStringBuilder = new StringBuilder();
+        for (Carts carts : cartsList) {
+            String addText = String.format(
+                    "品名: %s, 數量: %d NT$: %d",
+                    carts.getProductName(), carts.getQty(), carts.getPrice());
+            detailStringBuilder.append(addText);
+            detailStringBuilder.append("\n");
+        }
+
+        chatfuelTexts.add(new ChatfuelText(detailStringBuilder.toString()));
+
+        return chatfuelTexts;
+    }
+
     @GetMapping("/chatfuel/carts/messenger-user/{messengerUserId}")
-    public ResponseEntity<List<Carts>> showByMessengerUserId(@PathVariable(value = "messengerUserId") String messengerUserId) {
-        System.out.println("messengerUserId = " + messengerUserId);
-        return new ResponseEntity<>(cartsService.findByMessengerUserId(messengerUserId), HttpStatus.OK);
+    public ResponseEntity<ChatfuelMessages> showByMessengerUserId(@PathVariable(value = "messengerUserId") String messengerUserId) {
+        List<Carts> cartsList = cartsService.findByMessengerUserId(messengerUserId);
+        List<ChatfuelText> chatfuelTexts = listCarts(cartsList);
+
+        if (chatfuelTexts.isEmpty()) {
+            chatfuelTexts.add(new ChatfuelText("購物車是空的"));
+            return ResponseEntity.ok(new ChatfuelMessages(chatfuelTexts));
+        }
+
+        int totalPrice = cartsList
+                .stream()
+                .mapToInt(carts -> carts.getQty() * carts.getPrice())
+                .sum();
+        chatfuelTexts.add(new ChatfuelText(String.format("合計 NT$: %d", totalPrice)));
+
+        return ResponseEntity.ok(new ChatfuelMessages(chatfuelTexts));
     }
 
     @PostMapping("/chatfuel/carts")
@@ -46,27 +81,35 @@ public class ChatfuelCartsController {
 
     @PostMapping("/chatfuel/carts/checkout")
     public ResponseEntity<ChatfuelMessages> checkout(@RequestBody ClearCartPostBody clearCartPostBody) {
-        List<Carts> cartsList = cartsService.findByMessengerUserId(clearCartPostBody.getMessengerUserId());
-        List<ChatfuelText> chatfuelTexts = new ArrayList<>();
+        String messengerUserId = clearCartPostBody.getMessengerUserId();
+        String firstName = clearCartPostBody.getFirstName();
+        List<Carts> cartsList = cartsService.findByMessengerUserId(messengerUserId);
 
-        if (cartsList.isEmpty()) {
+        List<ChatfuelText> chatfuelTexts = listCarts(cartsList);
+
+        if (chatfuelTexts.isEmpty()) {
             chatfuelTexts.add(new ChatfuelText("購物車是空的"));
             return ResponseEntity.ok(new ChatfuelMessages(chatfuelTexts));
         }
 
-        int totalPrice = 0;
-//        StringBuilder detailStringBuilder = new StringBuilder();
-        for (Carts carts : cartsList) {
-            String addText = String.format(
-                    "品名: %s, 數量: %d NT$: %d",
-                    carts.getProductName(), carts.getQty(), carts.getPrice());
-            totalPrice += carts.getPrice();
-//            detailStringBuilder.append(String.format("%s, ", carts.getProductName()));
-            chatfuelTexts.add(new ChatfuelText(addText));
-        }
+        int totalPrice = cartsList
+                .stream()
+                .mapToInt(carts -> carts.getQty() * carts.getPrice())
+                .sum();
 
         chatfuelTexts.add(new ChatfuelText(String.format("合計 NT$: %d", totalPrice)));
         chatfuelTexts.add(new ChatfuelText("結帳完成，感謝您的購買。"));
+
+        // save orders
+        Orders orders = new Orders();
+        orders.setMessengerUserId(messengerUserId);
+        orders.setFirstName(firstName);
+        orders.setDetail(chatfuelTexts.toString());
+        orders.setTotalPrice(totalPrice);
+        ordersService.addOrders(orders);
+
+        // remove carts
+        cartsService.deleteByMessengerUserId(clearCartPostBody.getMessengerUserId());
 
         return ResponseEntity.ok(new ChatfuelMessages(chatfuelTexts));
     }
@@ -74,9 +117,9 @@ public class ChatfuelCartsController {
     @PostMapping("/chatfuel/carts/clear")
     public ResponseEntity<ChatfuelMessages> clear(@RequestBody ClearCartPostBody clearCartPostBody) {
         List<ChatfuelText> chatfuelTexts = new ArrayList<>();
-        System.out.println("clearCartPostBody = " + clearCartPostBody);
         cartsService.deleteByMessengerUserId(clearCartPostBody.getMessengerUserId());
         chatfuelTexts.add(new ChatfuelText("清除購物車成功"));
+
         return ResponseEntity.ok(new ChatfuelMessages(chatfuelTexts));
     }
 }

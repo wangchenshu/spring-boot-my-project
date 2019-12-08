@@ -31,6 +31,11 @@ public class ChatfuelCartsController {
     @Autowired
     private OrdersService ordersService;
 
+    private static final String CARTS_EMPTY = "購物車是空的";
+    private static final String CARTS_CLEAR_SUCCESS = "清除購物車成功";
+    private static final String CARTS_ADD_SUCCESS = "加入購物車成功";
+    private static final String ORDER_FINISH = "結帳完成，感謝您的購買";
+
     private List<ChatfuelText> listCarts(List<Carts> cartsList) {
         List<ChatfuelText> chatfuelTexts = new ArrayList<>();
 
@@ -41,7 +46,7 @@ public class ChatfuelCartsController {
         StringBuilder detailStringBuilder = new StringBuilder();
         for (Carts carts : cartsList) {
             String addText = String.format(
-                    "品名: %s, 數量: %d NT$: %d",
+                    "%s %d 個 %d元",
                     carts.getProductName(), carts.getQty(), carts.getPrice());
             detailStringBuilder.append(addText);
             detailStringBuilder.append("\n");
@@ -58,7 +63,7 @@ public class ChatfuelCartsController {
         List<ChatfuelText> chatfuelTexts = listCarts(cartsList);
 
         if (chatfuelTexts.isEmpty()) {
-            chatfuelTexts.add(new ChatfuelText("購物車是空的"));
+            chatfuelTexts.add(new ChatfuelText(CARTS_EMPTY));
             return ResponseEntity.ok(new ChatfuelMessages(chatfuelTexts));
         }
 
@@ -66,7 +71,7 @@ public class ChatfuelCartsController {
                 .stream()
                 .mapToInt(carts -> carts.getQty() * carts.getPrice())
                 .sum();
-        chatfuelTexts.add(new ChatfuelText(String.format("合計 NT$: %d", totalPrice)));
+        chatfuelTexts.add(new ChatfuelText(String.format("合計: %d元", totalPrice)));
 
         return ResponseEntity.ok(new ChatfuelMessages(chatfuelTexts));
     }
@@ -75,7 +80,7 @@ public class ChatfuelCartsController {
     public ResponseEntity<ChatfuelMessages> create(@RequestBody Carts carts) {
         List<ChatfuelText> chatfuelTexts = new ArrayList<>();
         cartsService.addCarts(carts);
-        chatfuelTexts.add(new ChatfuelText("加入購物車成功"));
+        chatfuelTexts.add(new ChatfuelText(CARTS_ADD_SUCCESS));
         return ResponseEntity.ok(new ChatfuelMessages(chatfuelTexts));
     }
 
@@ -88,7 +93,7 @@ public class ChatfuelCartsController {
         List<ChatfuelText> chatfuelTexts = listCarts(cartsList);
 
         if (chatfuelTexts.isEmpty()) {
-            chatfuelTexts.add(new ChatfuelText("購物車是空的"));
+            chatfuelTexts.add(new ChatfuelText(CARTS_EMPTY));
             return ResponseEntity.ok(new ChatfuelMessages(chatfuelTexts));
         }
 
@@ -98,7 +103,7 @@ public class ChatfuelCartsController {
                 .sum();
 
         chatfuelTexts.add(new ChatfuelText(String.format("合計 NT$: %d", totalPrice)));
-        chatfuelTexts.add(new ChatfuelText("結帳完成，感謝您的購買。"));
+        chatfuelTexts.add(new ChatfuelText(ORDER_FINISH));
 
         // save orders
         Orders orders = new Orders();
@@ -118,7 +123,7 @@ public class ChatfuelCartsController {
     public ResponseEntity<ChatfuelMessages> clear(@RequestBody ClearCartPostBody clearCartPostBody) {
         List<ChatfuelText> chatfuelTexts = new ArrayList<>();
         cartsService.deleteByMessengerUserId(clearCartPostBody.getMessengerUserId());
-        chatfuelTexts.add(new ChatfuelText("清除購物車成功"));
+        chatfuelTexts.add(new ChatfuelText(CARTS_CLEAR_SUCCESS));
 
         return ResponseEntity.ok(new ChatfuelMessages(chatfuelTexts));
     }
